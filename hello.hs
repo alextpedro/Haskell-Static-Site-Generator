@@ -1,33 +1,50 @@
 main :: IO()
-main = putStrLn myhtml
+main = putStrLn (render myhtml)
 
-myhtml :: String
-myhtml = makeHtml "My page title" (h1_ "Hello, World!" <> p_ "This is a paragraph.")
+myhtml :: HtmlDoc
+myhtml =
+  html_
+    "My title"
+    ( append_
+      (h1_ "Heading")
+      ( append_
+        (p_ "Paragraph #1")
+        (p_ "Paragraph #2")
+      )
+    )
 
-wrapHTML :: String -> String
-wrapHTML content = "<html><body>" <> content <> "</body></html>"
+newtype HtmlDoc = HtmlDoc String
 
-html_ :: String -> String
-html_ = el "html"
+newtype HtmlStruct = HtmlStruct String
 
-body_ :: String -> String
-body_ = el "body"
+html_ :: String -> HtmlStruct -> HtmlDoc
+html_ title content = 
+    HtmlDoc 
+        ( el "html" 
+            ( el "head" (el "title" title)
+                <> el "body" (getStructureString content)
+            )
+        )
 
-head_ :: String -> String
-head_  = el "head"
+p_ :: String -> HtmlStruct
+p_ = HtmlStruct . el "p"
 
-title_ :: String -> String
-title_ = el "title"
-
-p_ :: String -> String
-p_ = el "p"
-
-h1_ :: String -> String
-h1_ = el "h1"
-
-makeHtml :: String -> String -> String
-makeHtml title body = html_ (head_ (title_ title) <> body_ body)
+h1_ :: String -> HtmlStruct
+h1_ = HtmlStruct . el "h1"
 
 el :: String -> String -> String
 el tag content =
     "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
+
+append_ :: HtmlStruct -> HtmlStruct -> HtmlStruct
+append_ c1 c2 = HtmlStruct (getStructureString c1 <> getStructureString c2)
+
+getStructureString :: HtmlStruct -> String
+getStructureString content =
+  case content of
+    HtmlStruct str -> str
+
+render :: HtmlDoc -> String
+render doc =
+    case doc of 
+        HtmlDoc str -> str
