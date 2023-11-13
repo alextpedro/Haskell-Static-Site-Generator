@@ -22,6 +22,17 @@ module Html.Internal where
     el tag content =
         "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
 
+    ul_ :: [HtmlStruct] -> HtmlStruct
+    ul_ = 
+        HtmlStruct . el "ul" . concat . map (el "li" . getStructureString)
+
+    ol_ :: [HtmlStruct] -> HtmlStruct
+    ol_ = 
+        HtmlStruct . el "ol" . concat . map (el "li" . getStructureString)
+
+    code_ :: String -> HtmlStruct
+    code_ = HtmlStruct . el "pre" . escape
+
     append_ :: HtmlStruct -> HtmlStruct -> HtmlStruct
     append_ c1 c2 = HtmlStruct (getStructureString c1 <> getStructureString c2)
 
