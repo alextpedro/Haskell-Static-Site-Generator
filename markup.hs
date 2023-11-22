@@ -17,6 +17,22 @@ data Structure
     | OrderedList [String]
     | CodeBlock [String]
 
+parse :: String -> Document
+parse = parseLines [] . lines 
+
+parseLines :: [String] -> [String] -> Document
+parseLines currentParagraph txts =
+    let 
+        paragraph = Paragraph (unlines (reverse currentParagraph))
+    in
+        case txts of
+            [] -> [paragraph]
+            currentLine : rest ->       -- In the body of the "cons" pattern, we bind the first element to the name currentLine, and the rest of the elements to the name rest.
+                if trim currentLine == ""
+                    then 
+                        paragraph : parseLines [] rest
+                    else 
+                        parseLines (currentLine : currentParagraph) rest
 
 exercise1 :: Document
 exercise1 =
