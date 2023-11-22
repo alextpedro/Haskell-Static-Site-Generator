@@ -14,4 +14,3 @@ myhtml =
         (p_ "Paragraph #2")
       )
     )
-
