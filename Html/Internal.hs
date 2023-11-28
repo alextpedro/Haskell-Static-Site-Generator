@@ -33,8 +33,11 @@ module Html.Internal where
     code_ :: String -> HtmlStruct
     code_ = HtmlStruct . el "pre" . escape
 
-    append_ :: HtmlStruct -> HtmlStruct -> HtmlStruct
-    append_ c1 c2 = HtmlStruct (getStructureString c1 <> getStructureString c2)
+    {-append_ :: HtmlStruct -> HtmlStruct -> HtmlStruct
+    append_ c1 c2 = HtmlStruct (getStructureString c1 <> getStructureString c2)-}
+    instance Semigroup HtmlStruct where
+        (<>) c1 c2 =
+            HtmlStruct (getStructureString c1 <> getStructureString c2)
 
     getStructureString :: HtmlStruct -> String
     getStructureString content =

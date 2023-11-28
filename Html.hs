@@ -4,7 +4,6 @@ module Html (
     html_,
     p_,
     h1_,
-    append_,
     render
     )
     where
