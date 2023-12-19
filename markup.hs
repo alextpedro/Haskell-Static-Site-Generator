@@ -1,11 +1,13 @@
 module Markup 
     (   
         Document, 
-        Structure(..)
+        Structure(..),
+        parse
     ) 
 where
 
 import Numeric.Natural
+import Data.Maybe (maybeToList)
 
 type Document
     = [Structure]
@@ -16,26 +18,55 @@ data Structure
     | UnorderedList [String]
     | OrderedList [String]
     | CodeBlock [String]
-    deriving Show
+    deriving (Eq, Show)
 
 parse :: String -> Document
-parse = parseLines [] . lines 
+parse = parseLines Nothing . lines 
 
-parseLines :: [String] -> [String] -> Document
-parseLines currentParagraph txts =
-    let 
-        paragraph = Paragraph (unlines (reverse currentParagraph))
-    in
-        case txts of
-            [] -> [paragraph]
-            currentLine : rest ->       -- In the body of the "cons" pattern, we bind the first element to the name currentLine, and the rest of the elements to the name rest.
-                if trim currentLine == ""
-                    then 
-                        paragraph : parseLines [] rest
-                    else 
-                        parseLines (currentLine : currentParagraph) rest
+parseLines :: Maybe Structure -> [String] -> Document
+parseLines context txts =
+    case txts of
+        [] -> maybeToList context
+        ('*' : ' ' : line) : rest ->
+            maybe id (:) context (Heading 1 (trim line) : parseLines Nothing rest)
+        ('-' : ' ' : line) : rest ->
+            case context of
+                Just (UnorderedList list) ->
+                    parseLines (Just (UnorderedList (list <> [trim line]))) rest
+                _ ->
+                    maybe id (:) context (parseLines (Just (UnorderedList [trim line])) rest)
+        ('#' : ' ' : line) : rest ->
+        case context of
+            Just (OrderedList list) ->
+            parseLines (Just (OrderedList (list <> [trim line]))) rest
 
-exercise1 :: Document
+            _ ->
+            maybe id (:) context (parseLines (Just (OrderedList [trim line])) rest)
+        ('>' : ' ' : line) : rest ->
+        case context of
+            Just (CodeBlock code) ->
+            parseLines (Just (CodeBlock (code <> [line]))) rest
+
+            _ ->
+            maybe id (:) context (parseLines (Just (CodeBlock [line])) rest)
+        currentLine : rest ->
+        let
+            line = trim currentLine
+        in
+            if line == ""
+            then
+                maybe id (:) context (parseLines Nothing rest)
+            else
+                case context of
+                Just (Paragraph paragraph) ->
+                    parseLines (Just (Paragraph (unwords [paragraph, line]))) rest
+                _ ->
+                    maybe id (:) context (parseLines (Just (Paragraph line)) rest)
+
+trim :: String -> String
+trim = unwords . words
+
+{- exercise1 :: Document
 exercise1 =
     [Paragraph "Hello World"]
 
@@ -78,4 +109,4 @@ exercise4 =
         , "Defines the module name to be Main or does not have a module declaration"
         ]
     , Paragraph "Otherwise, it will only produce the .o and .hi files."
-    ]
+    ] -}
