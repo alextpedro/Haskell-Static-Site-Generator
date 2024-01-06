@@ -46,6 +46,6 @@ executable hs-blog-gen
   main-is: Main.hs
   build-depends:
       base
-    , <package-name>
+    , hs-blog
   ghc-options:
     -O
